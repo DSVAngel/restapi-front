@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <p>
+        Consumo de REST - API de Usuarios
+    </p>
+    <div>
+        <label>Name</label>
+        <input type="text" id="name">
+    </div>
+    <div>
+        <label>Email</label>
+        <input type="text" id="email">
+    </div>
+    <div>
+        <label>Age</label>
+        <input type="text" id="age">
+    </div>
+    <div>
+        <label>Comments</label>
+        <input type="text" id="comments">
+    </div><!--  -->
+    <button onclick="postUser()">POST user</button>
+    <button onclick="getUsers()">GET usuarios</button>
+    <div id="resultado"></div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="callrestapi.js"></script>
+</body>
+
+</html>
