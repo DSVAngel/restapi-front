@@ -1,4 +1,5 @@
-var url = "http://localhost:8080/api/users";
+var url = "http://104.197.120.154:8080/api/users";
+
 
 function postUser() {
   console.log(url);
