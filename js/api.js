@@ -2,7 +2,7 @@
 
 class ApiManager {
     constructor() {
-        this.apiUrl = localStorage.getItem('apiUrl') || 'http://localhost:8080/api';
+        this.apiUrl = localStorage.getItem('apiUrl') || 'http://35.188.110.194:8080/api';
         this.apiConnected = false;
     }
 
