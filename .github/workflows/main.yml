@@ -1,16 +1,16 @@
-name: Build and Push to Docker Hub
+name: Build and Push Frontend to Docker Hub
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch:  # permite ejecutarlo manualmente desde GitHub
+    branches: [ "master" ]
+  workflow_dispatch:
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout repo
       uses: actions/checkout@v3
 
     - name: Log in to Docker Hub
@@ -21,8 +21,8 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/restapipostgres:latest .
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/restapi-frontend:latest .
 
     - name: Push Docker image
       run: |
-        docker push ${{ secrets.DOCKER_USERNAME }}/restapipostgres:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/restapi-frontend:latest
