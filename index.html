@@ -1,31 +1,160 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios</title>
+    <link rel="stylesheet" href="styles/styles.css">
+</head>
 <body>
-    <p>
-        Consumo de REST - API de Usuarios
-    </p>
-    <div>
-        <label>Name</label>
-        <input type="text" id="name">
-    </div>
-    <div>
-        <label>Email</label>
-        <input type="text" id="email">
-    </div>
-    <div>
-        <label>Age</label>
-        <input type="text" id="age">
-    </div>
-    <div>
-        <label>Comments</label>
-        <input type="text" id="comments">
-    </div><!--  -->
-    <button onclick="postUser()">POST user</button>
-    <button onclick="getUsers()">GET usuarios</button>
-    <div id="resultado"></div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="callrestapi.js"></script>
-</body>
+    <div class="container">
+        <header>
+            <h1>Sistema de Gestión de Usuarios</h1>
+            <p>CRUD completo con soporte para múltiples APIs</p>
+        </header>
 
+        <div class="api-config">
+            <h2>Configuración de API</h2>
+            
+            <div class="api-buttons">
+                <div class="api-preset" data-url="" id="api-local">API MySQL</div>
+                <div class="api-preset" data-url="" id="api-prod">API Postgres</div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 15px;">
+                <label for="api-url">URL de la API</label>
+                <input type="text" id="api-url" placeholder="Por ejemplo: http://localhost:8080/api">
+            </div>
+            
+            <button id="save-api" class="btn-success">Guardar Configuración</button>
+            
+            <div class="api-status">
+                <div class="status-dot disconnected" id="api-status-dot"></div>
+                <span id="api-status-text">Desconectado</span>
+            </div>
+        </div>
+
+        <div class="notification" id="notification"></div>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="list">Lista de Usuarios</div>
+            <div class="tab" data-tab="create">Crear Usuario</div>
+        </div>
+
+        <div class="tab-content active" id="list-tab">
+            <h2>Usuarios Registrados</h2>
+            <button id="refresh-users" class="btn-success">Actualizar Lista</button>
+            <div class="loader" id="users-loader"></div>
+            <div id="users-table-container">
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Edad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody">
+                        <!-- Los usuarios se cargarán aquí dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content" id="create-tab">
+            <h2>Crear Nuevo Usuario</h2>
+            <form id="create-user-form">
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="name">Nombre</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="age">Edad</label>
+                    <input type="number" id="age" name="age" min="0" max="120">
+                </div>
+                
+                <div class="form-group">
+                    <label for="comments">Comentarios</label>
+                    <textarea id="comments" name="comments" rows="4"></textarea>
+                </div>
+                
+                <button type="submit" class="btn-success">Crear Usuario</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para editar usuario -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <span class="close" id="close-edit-modal">&times;</span>
+            <h2>Editar Usuario</h2>
+            <form id="edit-user-form">
+                <input type="hidden" id="edit-id">
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="edit-name">Nombre</label>
+                            <input type="text" id="edit-name" name="name" required>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="edit-email">Email</label>
+                            <input type="email" id="edit-email" name="email" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-age">Edad</label>
+                    <input type="number" id="edit-age" name="age" min="0" max="120">
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-comments">Comentarios</label>
+                    <textarea id="edit-comments" name="comments" rows="4"></textarea>
+                </div>
+                
+                <button type="submit" class="btn-warning">Actualizar Usuario</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para confirmar eliminación -->
+    <div class="modal" id="delete-modal">
+        <div class="modal-content">
+            <span class="close" id="close-delete-modal">&times;</span>
+            <h2>Confirmar Eliminación</h2>
+            <p>¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.</p>
+            <input type="hidden" id="delete-id">
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button id="cancel-delete" class="btn-success">Cancelar</button>
+                <button id="confirm-delete" class="btn-danger">Eliminar</button>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        import { initUI } from './js/ui.js';
+        import { fetchUsers } from './js/users.js';
+        
+        // Inicializar al cargar el DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            initUI();
+            fetchUsers();
+        });
+    </script>
+</body>
 </html>
