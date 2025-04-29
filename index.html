@@ -17,8 +17,8 @@
             <h2>Configuración de API</h2>
             
             <div class="api-buttons">
-                <div class="api-preset" data-url="" id="api-local">API MySQL</div>
-                <div class="api-preset" data-url="" id="api-prod">API Postgres</div>
+                <div class="api-preset" data-url="http://localhost:8080/api" id="api-local">API MySQL</div>
+                <div class="api-preset" data-url="http://localhost:5000/api" id="api-prod">API Postgres</div>
             </div>
             
             <div class="form-group" style="margin-top: 15px;">
@@ -146,13 +146,35 @@
             </div>
         </div>
     </div>
+
+    <!-- Añadir información de estado de la red -->
+    <div style="text-align: center; margin-top: 20px; color: #666;">
+        <p>Estado de la red: <span id="network-status">En línea</span></p>
+    </div>
+
     <script type="module">
         import { initUI } from './js/ui.js';
         import { fetchUsers } from './js/users.js';
+        import { apiManager } from './js/api.js';
         
         // Inicializar al cargar el DOM
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             initUI();
+            
+            // Configurar eventos de red
+            window.addEventListener('online', () => {
+                document.getElementById('network-status').textContent = 'En línea';
+                document.getElementById('network-status').style.color = '#2ecc71';
+                apiManager.checkConnection().then(() => fetchUsers());
+            });
+            
+            window.addEventListener('offline', () => {
+                document.getElementById('network-status').textContent = 'Desconectado';
+                document.getElementById('network-status').style.color = '#e74c3c';
+            });
+            
+            // Verificar conexión inicial
+            await apiManager.checkConnection();
             fetchUsers();
         });
     </script>
