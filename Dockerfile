@@ -1,13 +1,23 @@
-# Usa una imagen ligera de Nginx para servir archivos estáticos
-# Usa una imagen ligera de Nginx
+# Etapa 1: build de Angular
+FROM node:20 AS build
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm install
+
+COPY . .
+RUN npm run build --prod
+
+# Etapa 2: servir con Nginx
 FROM nginx:alpine
 
-# Elimina los archivos por defecto
-RUN rm -rf /usr/share/nginx/html/*
+# Copiar la build de Angular al directorio de Nginx
+COPY --from=build /app/dist/* /usr/share/nginx/html/
 
-# Copia los archivos del proyecto al directorio público de Nginx
-COPY . /usr/share/nginx/html
+# Copiar configuración personalizada de Nginx (opcional)
+# COPY nginx.conf /etc/nginx/nginx.conf
 
-# Expone el puerto 80
 EXPOSE 80
 
+CMD ["nginx", "-g", "daemon off;"]
