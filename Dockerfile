@@ -1,11 +1,20 @@
-# Usamos la imagen oficial de Nginx
-FROM nginx:alpine
+# Usa Node.js como base
+FROM node:20
 
-# Copiamos los archivos estáticos al directorio que Nginx sirve
-COPY . /usr/share/nginx/html
+# Crea y establece el directorio de trabajo
+WORKDIR /app
 
-# Exponemos el puerto 80
-EXPOSE 8082
+# Copia los archivos de dependencias primero
+COPY package.json package-lock.json ./
 
-# Comando para mantener Nginx corriendo
-CMD ["nginx", "-g", "daemon off;"]
+# Instala dependencias
+RUN npm install
+
+# Copia el resto del proyecto
+COPY . .
+
+# Expón el puerto que tu app usa (ajústalo si es diferente)
+EXPOSE 3000
+
+# Comando por defecto al iniciar el contenedor
+CMD ["npm", "start"]
