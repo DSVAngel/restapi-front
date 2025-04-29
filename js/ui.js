@@ -37,8 +37,8 @@ export function renderUsers(usersData) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${user.id}</td>
-            <td>${user.name}</td>
-            <td>${user.email}</td>
+            <td>${user.name || 'Sin nombre'}</td>
+            <td>${user.email || 'Sin email'}</td>
             <td>${user.age || 'N/A'}</td>
             <td>
                 <div class="action-buttons">
@@ -126,16 +126,27 @@ export function initUI() {
     // Configurar la URL inicial
     apiUrlInput.value = apiManager.getApiUrl();
     updateActiveApiButton();
+    updateApiStatus();
     
     // Botones de API preestablecidos
     apiLocalBtn.addEventListener('click', () => {
-        apiUrlInput.value = apiLocalBtn.getAttribute('data-url');
-        saveApiConfig();
+        const apiUrl = apiLocalBtn.getAttribute('data-url');
+        if (apiUrl) {
+            apiUrlInput.value = apiUrl;
+            saveApiConfig();
+        } else {
+            showNotification('URL de API no configurada en el botón', 'error');
+        }
     });
     
     apiProdBtn.addEventListener('click', () => {
-        apiUrlInput.value = apiProdBtn.getAttribute('data-url');
-        saveApiConfig();
+        const apiUrl = apiProdBtn.getAttribute('data-url');
+        if (apiUrl) {
+            apiUrlInput.value = apiUrl;
+            saveApiConfig();
+        } else {
+            showNotification('URL de API no configurada en el botón', 'error');
+        }
     });
     
     // Tabs
@@ -159,7 +170,12 @@ export function initUI() {
     saveApiBtn.addEventListener('click', saveApiConfig);
 
     // Refrescar lista de usuarios
-    refreshUsersBtn.addEventListener('click', fetchUsers);
+    refreshUsersBtn.addEventListener('click', async () => {
+        // Verificar conexión antes de intentar cargar usuarios
+        await apiManager.checkConnection();
+        updateApiStatus();
+        fetchUsers();
+    });
 
     // Crear usuario
     createUserForm.addEventListener('submit', (e) => {
@@ -178,6 +194,8 @@ export function initUI() {
                 fetchUsers();
                 tabs[0].click(); // Cambiar a la pestaña de lista
             }
+        }).catch(() => {
+            // Error ya manejado en la función createUser
         });
     });
 
@@ -198,6 +216,8 @@ export function initUI() {
                 editModal.style.display = 'none';
                 fetchUsers();
             }
+        }).catch(() => {
+            // Error ya manejado en la función updateUser
         });
     });
 
@@ -222,6 +242,8 @@ export function initUI() {
                 deleteModal.style.display = 'none';
                 fetchUsers();
             }
+        }).catch(() => {
+            // Error ya manejado en la función deleteUser
         });
     });
     
@@ -251,6 +273,18 @@ function saveApiConfig() {
     // Actualizar botón activo
     updateActiveApiButton();
     
-    // Recargar usuarios con la nueva API
-    fetchUsers();
+    // Verificar conexión y luego cargar usuarios
+    apiManager.checkConnection().then(connected => {
+        updateApiStatus();
+        if (connected) {
+            fetchUsers();
+            showNotification('Conexión exitosa con la API', 'success');
+        } else {
+            showNotification('No se pudo conectar a la API', 'error');
+        }
+    }).catch(error => {
+        console.error("Error al verificar conexión:", error);
+        updateApiStatus();
+        showNotification('Error al conectar con la API', 'error');
+    });
 }
